@@ -6,7 +6,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install FreeRADIUS with SQLite support and other dependencies
 RUN apt-get update && apt-get install -y \
     freeradius \
-    freeradius-sqlite3 \
     freeradius-utils \
     sqlite3 \
     libqrencode4 \
