@@ -1,0 +1,73 @@
+# default - Main virtual server configuration
+#
+# This is the main authentication virtual server.
+
+server default {
+    listen {
+        type = auth
+        ipaddr = *
+        port = 1812
+        limit {
+            max_connections = 16
+            lifetime = 0
+            idle_timeout = 30
+        }
+    }
+
+    listen {
+        type = acct
+        ipaddr = *
+        port = 1813
+        limit {
+        }
+    }
+
+    authorize {
+        # First, check if the user exists in the database
+        sql
+
+        # If the user exists, check for TOTP configuration
+        if (ok || updated) {
+            totp
+        }
+
+        # Fall back to PAP authentication if TOTP is not configured
+        pap
+    }
+
+    authenticate {
+        # TOTP authentication
+        totp
+
+        # PAP authentication
+        pap
+    }
+
+    preacct {
+        preprocess
+        acct_unique
+        suffix
+    }
+
+    accounting {
+        detail
+        sql
+        exec
+        attr_filter.accounting_response
+    }
+
+    session {
+        sql
+    }
+
+    post-auth {
+        # Update the SQL database with the authentication result
+        sql
+
+        # Log the authentication result
+        exec
+        Post-Auth-Type REJECT {
+            attr_filter.access_reject
+        }
+    }
+}

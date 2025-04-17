@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="text-center mt-5">
+    <div class="display-1 text-muted">
+        <i class="fas fa-map-signs"></i>
+    </div>
+    <h1 class="display-4">404</h1>
+    <p class="lead">Page Not Found</p>
+    <p class="text-muted">The page you are looking for does not exist or has been moved.</p>
+    <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
+        <i class="fas fa-home"></i> Return to Dashboard
+    </a>
+</div>
+{% endblock %}

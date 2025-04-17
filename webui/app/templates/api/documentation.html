@@ -1,0 +1,464 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1>API Documentation</h1>
+            <p class="lead">This page provides documentation for the FreeRADIUS TOTP Management System API.</p>
+            
+            <div class="alert alert-info">
+                <h5><i class="fas fa-info-circle"></i> Authentication</h5>
+                <p>All API requests (except health check) require authentication using an API key. You can create API keys in the <a href="{{ url_for('main.api_keys') }}">API Keys</a> section.</p>
+                <p>Include your API key in one of the following ways:</p>
+                <ul>
+                    <li>As an <code>X-API-Key</code> header: <code>X-API-Key: your-api-key</code></li>
+                    <li>As a query parameter: <code>?api_key=your-api-key</code></li>
+                </ul>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">System Endpoints</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="border-bottom pb-2">Health Check</h6>
+                    <div class="mb-3">
+                        <code class="bg-light p-2 d-block">GET /api/health</code>
+                        <p>Check if the API is running. This endpoint does not require authentication.</p>
+                        <p><strong>Response:</strong></p>
+<pre class="bg-light p-2">
+{
+  "status": "healthy",
+  "timestamp": "2025-04-16 20:30:00"
+}
+</pre>
+                    </div>
+                    
+                    <h6 class="border-bottom pb-2 mt-4">System Status</h6>
+                    <div class="mb-3">
+                        <code class="bg-light p-2 d-block">GET /api/status</code>
+                        <p>Get system status information including user counts, client counts, and authentication statistics.</p>
+                        <p><strong>Response:</strong></p>
+<pre class="bg-light p-2">
+{
+  "users": {
+    "total": 10,
+    "with_totp": 5
+  },
+  "clients": {
+    "total": 3
+  },
+  "authentication": {
+    "total": 150,
+    "successful": 145,
+    "failed": 5
+  },
+  "recent_auth": [
+    {
+      "username": "user1",
+      "nasipaddress": "192.168.1.1",
+      "acctstarttime": "2025-04-16 20:25:00",
+      "acctstoptime": "2025-04-16 20:25:10"
+    }
+  ],
+  "database": {
+    "size_mb": 2.5,
+    "path": "/data/sqlite/radius.db"
+  },
+  "timestamp": "2025-04-16 20:30:00"
+}
+</pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">User Management Endpoints</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="border-bottom pb-2">List Users</h6>
+                    <div class="mb-3">
+                        <code class="bg-light p-2 d-block">GET /api/users?search=&lt;search_term&gt;&limit=&lt;limit&gt;&offset=&lt;offset&gt;</code>
+                        <p>Get a list of users with optional filtering.</p>
+                        <p><strong>Parameters:</strong></p>
+                        <ul>
+                            <li><code>search</code> (optional): Filter users by username</li>
+                            <li><code>limit</code> (optional, default: 100): Maximum number of users to return</li>
+                            <li><code>offset</code> (optional, default: 0): Number of users to skip</li>
+                        </ul>
+                        <p><strong>Response:</strong></p>
+<pre class="bg-light p-2">
+{
+  "total": 10,
+  "limit": 100,
+  "offset": 0,
+  "users": [
+    {
+      "username": "user1"
+    },
+    {
+      "username": "user2"
+    }
+  ]
+}
+</pre>
+                    </div>
+                    
+                    <h6 class="border-bottom pb-2 mt-4">Get User</h6>
+                    <div class="mb-3">
+                        <code class="bg-light p-2 d-block">GET /api/users/&lt;username&gt;</code>
+                        <p>Get detailed information about a specific user.</p>
+                        <p><strong>Response:</strong></p>
+<pre class="bg-light p-2">
+{
+  "username": "user1",
+  "attributes": {
+    "Cleartext-Password": {
+      "value": "password",
+      "op": ":="
+    }
+  },
+  "has_totp": true,
+  "totp_enabled": true,
+  "groups": ["users", "vpn"]
+}
+</pre>
+                    </div>
+                    
+                    <h6 class="border-bottom pb-2 mt-4">Create User</h6>
+                    <div class="mb-3">
+                        <code class="bg-light p-2 d-block">POST /api/users</code>
+                        <p>Create a new user.</p>
+                        <p><strong>Request Body:</strong></p>
+<pre class="bg-light p-2">
+{
+  "username": "newuser",
+  "password": "password123",
+  "totp_enabled": true,
+  "groups": ["users", "vpn"]
+}
+</pre>
+                        <p><strong>Response:</strong></p>
+<pre class="bg-light p-2">
+{
+  "username": "newuser",
+  "attributes": {
+    "Cleartext-Password": {
+      "value": "password123",
+      "op": ":="
+    },
+    "TOTP-Secret": {
+      "value": "JBSWY3DPEHPK3PXP",
+      "op": ":="
+    }
+  },
+  "has_totp": true,
+  "totp_enabled": true,
+  "groups": ["users", "vpn"],
+  "totp_secret": "JBSWY3DPEHPK3PXP",
+  "totp_qrcode": "data:image/png;base64,..."
+}
+</pre>
+                    </div>
+                    
+                    <h6 class="border-bottom pb-2 mt-4">Update User</h6>
+                    <div class="mb-3">
+                        <code class="bg-light p-2 d-block">PUT /api/users/&lt;username&gt;</code>
+                        <p>Update an existing user.</p>
+                        <p><strong>Request Body:</strong></p>
+<pre class="bg-light p-2">
+{
+  "password": "newpassword",
+  "totp_enabled": false,
+  "groups": ["users"]
+}
+</pre>
+                        <p><strong>Response:</strong></p>
+<pre class="bg-light p-2">
+{
+  "username": "user1",
+  "attributes": {
+    "Cleartext-Password": {
+      "value": "newpassword",
+      "op": ":="
+    }
+  },
+  "has_totp": false,
+  "totp_enabled": false,
+  "groups": ["users"]
+}
+</pre>
+                    </div>
+                    
+                    <h6 class="border-bottom pb-2 mt-4">Delete User</h6>
+                    <div class="mb-3">
+                        <code class="bg-light p-2 d-block">DELETE /api/users/&lt;username&gt;</code>
+                        <p>Delete a user.</p>
+                        <p><strong>Response:</strong></p>
+<pre class="bg-light p-2">
+{
+  "success": true,
+  "message": "User user1 deleted successfully"
+}
+</pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">TOTP Management Endpoints</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="border-bottom pb-2">Setup TOTP</h6>
+                    <div class="mb-3">
+                        <code class="bg-light p-2 d-block">POST /api/totp/&lt;username&gt;/setup?reset=true|false</code>
+                        <p>Setup or reset TOTP for a user.</p>
+                        <p><strong>Parameters:</strong></p>
+                        <ul>
+                            <li><code>reset</code> (optional, default: false): Whether to reset the TOTP secret if it already exists</li>
+                        </ul>
+                        <p><strong>Response:</strong></p>
+<pre class="bg-light p-2">
+{
+  "username": "user1",
+  "secret": "JBSWY3DPEHPK3PXP",
+  "qrcode": "data:image/png;base64,..."
+}
+</pre>
+                    </div>
+                    
+                    <h6 class="border-bottom pb-2 mt-4">Verify TOTP</h6>
+                    <div class="mb-3">
+                        <code class="bg-light p-2 d-block">POST /api/totp/verify</code>
+                        <p>Verify a TOTP token for a user.</p>
+                        <p><strong>Request Body:</strong></p>
+<pre class="bg-light p-2">
+{
+  "username": "user1",
+  "token": "123456"
+}
+</pre>
+                        <p><strong>Response:</strong></p>
+<pre class="bg-light p-2">
+{
+  "success": true,
+  "message": "TOTP verification successful"
+}
+</pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Client Management Endpoints</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="border-bottom pb-2">List Clients</h6>
+                    <div class="mb-3">
+                        <code class="bg-light p-2 d-block">GET /api/clients</code>
+                        <p>Get a list of all RADIUS clients.</p>
+                        <p><strong>Response:</strong></p>
+<pre class="bg-light p-2">
+[
+  {
+    "id": 1,
+    "nasname": "192.168.1.1",
+    "shortname": "router1",
+    "type": "cisco",
+    "ports": 1812,
+    "secret": "secret123",
+    "server": null,
+    "community": null,
+    "description": "Main router"
+  }
+]
+</pre>
+                    </div>
+                    
+                    <h6 class="border-bottom pb-2 mt-4">Get Client</h6>
+                    <div class="mb-3">
+                        <code class="bg-light p-2 d-block">GET /api/clients/&lt;client_id&gt;</code>
+                        <p>Get detailed information about a specific RADIUS client.</p>
+                        <p><strong>Response:</strong></p>
+<pre class="bg-light p-2">
+{
+  "id": 1,
+  "nasname": "192.168.1.1",
+  "shortname": "router1",
+  "type": "cisco",
+  "ports": 1812,
+  "secret": "secret123",
+  "server": null,
+  "community": null,
+  "description": "Main router"
+}
+</pre>
+                    </div>
+                    
+                    <h6 class="border-bottom pb-2 mt-4">Create Client</h6>
+                    <div class="mb-3">
+                        <code class="bg-light p-2 d-block">POST /api/clients</code>
+                        <p>Create a new RADIUS client.</p>
+                        <p><strong>Request Body:</strong></p>
+<pre class="bg-light p-2">
+{
+  "nasname": "192.168.1.2",
+  "shortname": "router2",
+  "type": "cisco",
+  "secret": "secret456",
+  "ports": 1812,
+  "description": "Backup router"
+}
+</pre>
+                        <p><strong>Response:</strong></p>
+<pre class="bg-light p-2">
+{
+  "id": 2,
+  "nasname": "192.168.1.2",
+  "shortname": "router2",
+  "type": "cisco",
+  "ports": 1812,
+  "secret": "secret456",
+  "server": null,
+  "community": null,
+  "description": "Backup router"
+}
+</pre>
+                    </div>
+                    
+                    <h6 class="border-bottom pb-2 mt-4">Update Client</h6>
+                    <div class="mb-3">
+                        <code class="bg-light p-2 d-block">PUT /api/clients/&lt;client_id&gt;</code>
+                        <p>Update an existing RADIUS client.</p>
+                        <p><strong>Request Body:</strong></p>
+<pre class="bg-light p-2">
+{
+  "description": "Updated description"
+}
+</pre>
+                        <p><strong>Response:</strong></p>
+<pre class="bg-light p-2">
+{
+  "id": 1,
+  "nasname": "192.168.1.1",
+  "shortname": "router1",
+  "type": "cisco",
+  "ports": 1812,
+  "secret": "secret123",
+  "server": null,
+  "community": null,
+  "description": "Updated description"
+}
+</pre>
+                    </div>
+                    
+                    <h6 class="border-bottom pb-2 mt-4">Delete Client</h6>
+                    <div class="mb-3">
+                        <code class="bg-light p-2 d-block">DELETE /api/clients/&lt;client_id&gt;</code>
+                        <p>Delete a RADIUS client.</p>
+                        <p><strong>Response:</strong></p>
+<pre class="bg-light p-2">
+{
+  "success": true,
+  "message": "Client router1 deleted successfully"
+}
+</pre>
+                    </div>
+                    
+                    <h6 class="border-bottom pb-2 mt-4">Rotate Client Secret</h6>
+                    <div class="mb-3">
+                        <code class="bg-light p-2 d-block">POST /api/clients/&lt;client_id&gt;/rotate-secret</code>
+                        <p>Generate and set a new random secret for a RADIUS client.</p>
+                        <p><strong>Response:</strong></p>
+<pre class="bg-light p-2">
+{
+  "success": true,
+  "client_id": 1,
+  "shortname": "router1",
+  "new_secret": "newrandomsecret"
+}
+</pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Log Access Endpoints</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="border-bottom pb-2">Authentication Logs</h6>
+                    <div class="mb-3">
+                        <code class="bg-light p-2 d-block">GET /api/logs/auth?username=&lt;username&gt;&status=&lt;status&gt;&start_date=&lt;start_date&gt;&end_date=&lt;end_date&gt;&limit=&lt;limit&gt;&offset=&lt;offset&gt;</code>
+                        <p>Get authentication logs with optional filtering.</p>
+                        <p><strong>Parameters:</strong></p>
+                        <ul>
+                            <li><code>username</code> (optional): Filter logs by username</li>
+                            <li><code>status</code> (optional): Filter logs by status (success/failure)</li>
+                            <li><code>start_date</code> (optional): Filter logs by start date</li>
+                            <li><code>end_date</code> (optional): Filter logs by end date</li>
+                            <li><code>limit</code> (optional, default: 100): Maximum number of logs to return</li>
+                            <li><code>offset</code> (optional, default: 0): Number of logs to skip</li>
+                        </ul>
+                        <p><strong>Response:</strong></p>
+<pre class="bg-light p-2">
+{
+  "total": 150,
+  "limit": 100,
+  "offset": 0,
+  "logs": [
+    {
+      "radacctid": 1,
+      "acctsessionid": "12345",
+      "acctuniqueid": "abcdef",
+      "username": "user1",
+      "nasipaddress": "192.168.1.1",
+      "acctstarttime": "2025-04-16 20:25:00",
+      "acctstoptime": "2025-04-16 20:25:10"
+    }
+  ]
+}
+</pre>
+                    </div>
+                    
+                    <h6 class="border-bottom pb-2 mt-4">Audit Logs</h6>
+                    <div class="mb-3">
+                        <code class="bg-light p-2 d-block">GET /api/logs/audit?admin=&lt;admin&gt;&action=&lt;action&gt;&start_date=&lt;start_date&gt;&end_date=&lt;end_date&gt;&limit=&lt;limit&gt;&offset=&lt;offset&gt;</code>
+                        <p>Get audit logs with optional filtering.</p>
+                        <p><strong>Parameters:</strong></p>
+                        <ul>
+                            <li><code>admin</code> (optional): Filter logs by admin username</li>
+                            <li><code>action</code> (optional): Filter logs by action</li>
+                            <li><code>start_date</code> (optional): Filter logs by start date</li>
+                            <li><code>end_date</code> (optional): Filter logs by end date</li>
+                            <li><code>limit</code> (optional, default: 100): Maximum number of logs to return</li>
+                            <li><code>offset</code> (optional, default: 0): Number of logs to skip</li>
+                        </ul>
+                        <p><strong>Response:</strong></p>
+<pre class="bg-light p-2">
+{
+  "total": 50,
+  "limit": 100,
+  "offset": 0,
+  "logs": [
+    {
+      "id": 1,
+      "admin_username": "admin",
+      "action": "create_user",
+      "details": "Created user user1 with TOTP: true",
+      "timestamp": "2025-04-16 20:20:00"
+    }
+  ]
+}
+</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

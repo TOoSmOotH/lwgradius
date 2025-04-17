@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-qrcode"></i> TOTP Setup for {{ username }}
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> 
+                Scan the QR code below with a TOTP app like Google Authenticator, Authy, or Microsoft Authenticator.
+            </div>
+            
+            <div class="qrcode-container">
+                <img src="{{ qrcode }}" alt="TOTP QR Code" class="img-fluid">
+            </div>
+            
+            <div class="secret-key">
+                <p class="mb-1">Manual entry secret key:</p>
+                <code>{{ secret }}</code>
+            </div>
+            
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Important:</strong> This QR code and secret key will only be shown once. Make sure to scan it now.
+            </div>
+            
+            <hr>
+            
+            <h5>Verify TOTP Setup</h5>
+            <p>Enter a code from your authenticator app to verify the setup:</p>
+            
+            <form method="POST" action="{{ url_for('totp.verify', username=username) }}">
+                {{ form.hidden_tag() }}
+                
+                <div class="mb-3">
+                    <label for="token" class="form-label">TOTP Token</label>
+                    <div class="input-group">
+                        {{ form.token(class="form-control", placeholder="Enter 6-digit code") }}
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check"></i> Verify
+                        </button>
+                    </div>
+                    {% if form.token.errors %}
+                        <div class="text-danger">
+                            {% for error in form.token.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </form>
+            
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{{ url_for('user.list_users') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Users
+                </a>
+                <form method="POST" action="{{ url_for('totp.reset', username=username) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to reset TOTP for this user? This will invalidate the current QR code.');">
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-sync-alt"></i> Reset TOTP
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

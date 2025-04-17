@@ -1,0 +1,36 @@
+# totp - Time-based One-Time Password module configuration
+#
+# This module implements TOTP authentication for FreeRADIUS.
+
+totp {
+    # Time-based configuration
+    time_step = 30      # Time step in seconds (standard for Google Authenticator)
+    hash_algorithm = "sha1"  # Hash algorithm (sha1, sha256, sha512)
+    digits = 6          # Number of digits in the OTP
+    
+    # Window configuration
+    window_behind = 1   # Allow 1 step behind (30 seconds)
+    window_ahead = 1    # Allow 1 step ahead (30 seconds)
+    
+    # Secret storage
+    secret_attribute = "TOTP-Secret"  # Attribute name in the database
+    
+    # SQL query to retrieve the TOTP secret
+    query = "SELECT value FROM radcheck WHERE username = '%{SQL-User-Name}' AND attribute = 'TOTP-Secret'"
+    
+    # If set to yes, the module will fall through if no TOTP secret is found
+    # This allows for mixed authentication methods
+    allow_fallthrough = yes
+    
+    # If set to yes, the module will cache TOTP secrets for performance
+    cache = yes
+    
+    # Cache TTL in seconds
+    cache_ttl = 300
+    
+    # QR code generation settings
+    qrcode_issuer = "FreeRADIUS-TOTP"  # Issuer name in Google Authenticator
+    
+    # Logging configuration
+    log_level = info
+}

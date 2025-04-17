@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  freeradius:
+    build:
+      context: ./freeradius
+      dockerfile: Dockerfile
+    container_name: freeradius-totp
+    restart: unless-stopped
+    ports:
+      - "1812:1812/udp"  # RADIUS authentication
+      - "1813:1813/udp"  # RADIUS accounting
+    volumes:
+      - radius-config:/etc/raddb
+      - radius-data:/data/sqlite
+      - ./freeradius/scripts/healthcheck.sh:/usr/local/bin/healthcheck.sh
+    environment:
+      - TZ=UTC
+      - SQLITE_DB=/data/sqlite/radius.db
+    networks:
+      - radius-network
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    labels:
+      - "com.freeradius-totp.description=FreeRADIUS server with TOTP support"
+      - "com.freeradius-totp.service=authentication"
+
+  webui:
+    build:
+      context: ./webui
+      dockerfile: Dockerfile
+    container_name: radius-webui
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - radius-data:/data/sqlite
+      - radius-backups:/data/backups
+      - ./certs:/app/ssl:ro
+      - ./webui/scripts/healthcheck.sh:/usr/local/bin/healthcheck.sh
+    environment:
+      - TZ=UTC
+      - SQLITE_DB=/data/sqlite/radius.db
+      - ADMIN_USER=admin
+      - ADMIN_PASSWORD_HASH=changeme
+      - BACKUP_DIR=/data/backups
+      - USE_SSL=${USE_SSL:-false}
+      - SSL_CERT=/app/ssl/server.crt
+      - SSL_KEY=/app/ssl/server.key
+    networks:
+      - radius-network
+    depends_on:
+      - freeradius
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    labels:
+      - "com.freeradius-totp.description=Web UI for FreeRADIUS TOTP Management"
+      - "com.freeradius-totp.service=management"
+
+volumes:
+  radius-config:
+    labels:
+      - "com.freeradius-totp.description=FreeRADIUS configuration volume"
+  radius-data:
+    labels:
+      - "com.freeradius-totp.description=FreeRADIUS data volume"
+  radius-backups:
+    labels:
+      - "com.freeradius-totp.description=Backup storage volume"
+
+networks:
+  radius-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+          gateway: 172.28.0.1
+    labels:
+      - "com.freeradius-totp.description=Network for FreeRADIUS TOTP Management System"

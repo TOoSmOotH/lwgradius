@@ -1,0 +1,4 @@
+username,password,totp_enabled,groups
+user1,password123,true,"staff,users"
+user2,securepass,,users
+user3,anotherpass,false,guests

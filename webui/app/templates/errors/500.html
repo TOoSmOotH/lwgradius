@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="text-center mt-5">
+    <div class="display-1 text-muted">
+        <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <h1 class="display-4">500</h1>
+    <p class="lead">Internal Server Error</p>
+    <p class="text-muted">Something went wrong on our end. Please try again later or contact the administrator.</p>
+    <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
+        <i class="fas fa-home"></i> Return to Dashboard
+    </a>
+</div>
+{% endblock %}

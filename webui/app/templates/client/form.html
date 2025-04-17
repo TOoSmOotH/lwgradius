@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <div class="card">
+        <div class="card-header">
+            {% if client %}
+            <i class="fas fa-edit"></i> Edit RADIUS Client: {{ client.shortname }}
+            {% else %}
+            <i class="fas fa-plus-circle"></i> Add New RADIUS Client
+            {% endif %}
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('client.edit_client', client_id=client.id) if client else url_for('client.create_client') }}">
+                {{ form.hidden_tag() }}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="nasname" class="form-label">IP Address/Hostname</label>
+                            {{ form.nasname(class="form-control", placeholder="e.g., 192.168.1.1 or router.example.com") }}
+                            {% if form.nasname.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.nasname.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">The IP address or hostname of the RADIUS client device.</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="shortname" class="form-label">Short Name</label>
+                            {{ form.shortname(class="form-control", placeholder="e.g., MainRouter") }}
+                            {% if form.shortname.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.shortname.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">A short, descriptive name for this client.</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="type" class="form-label">Device Type</label>
+                            {{ form.type(class="form-control") }}
+                            {% if form.type.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.type.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">The type of network device.</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="secret" class="form-label">Shared Secret</label>
+                            {{ form.secret(class="form-control", placeholder="Enter shared secret") }}
+                            {% if form.secret.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.secret.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">The shared secret used to secure communication between the client and server.</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="ports" class="form-label">Ports</label>
+                            {{ form.ports(class="form-control", placeholder="e.g., 1812") }}
+                            {% if form.ports.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.ports.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Optional: The port number(s) used by this client.</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="server" class="form-label">Server</label>
+                            {{ form.server(class="form-control", placeholder="Optional server name") }}
+                            {% if form.server.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.server.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Optional: Server name for this client.</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="community" class="form-label">Community</label>
+                            {{ form.community(class="form-control", placeholder="Optional SNMP community") }}
+                            {% if form.community.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.community.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Optional: SNMP community string for this client.</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            {{ form.description(class="form-control", placeholder="Optional description", rows=3) }}
+                            {% if form.description.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Optional: Additional information about this client.</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{{ url_for('client.list_clients') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 
+                        {% if client %}
+                        Save Changes
+                        {% else %}
+                        Add Client
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    {% if client %}
+    <div class="card mt-4">
+        <div class="card-header bg-warning text-dark">
+            <i class="fas fa-key"></i> Rotate Shared Secret
+        </div>
+        <div class="card-body">
+            <p>
+                For security reasons, it's recommended to periodically rotate the shared secret for RADIUS clients.
+                Clicking the button below will generate a new random secret.
+            </p>
+            <p class="text-danger">
+                <strong>Warning:</strong> After rotating the secret, you must update the configuration on the client device.
+                The client will not be able to authenticate until the new secret is configured.
+            </p>
+            <form method="POST" action="{{ url_for('client.rotate_secret', client_id=client.id) }}" onsubmit="return confirm('Are you sure you want to rotate the shared secret? The client will not be able to authenticate until the new secret is configured on the device.');">
+                <button type="submit" class="btn btn-warning">
+                    <i class="fas fa-sync-alt"></i> Generate New Secret
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

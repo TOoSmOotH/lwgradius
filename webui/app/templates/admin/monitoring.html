@@ -1,0 +1,411 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1>System Monitoring</h1>
+            <p class="lead">Monitor system health and performance metrics.</p>
+            
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary h-100">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">CPU Usage</h5>
+                            <div class="display-4 mb-2" id="cpu-usage">--</div>
+                            <div class="progress">
+                                <div class="progress-bar" id="cpu-progress" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success h-100">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Memory Usage</h5>
+                            <div class="display-4 mb-2" id="memory-usage">--</div>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" id="memory-progress" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-info h-100">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Disk Usage</h5>
+                            <div class="display-4 mb-2" id="disk-usage">--</div>
+                            <div class="progress">
+                                <div class="progress-bar bg-info" id="disk-progress" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-secondary h-100">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Uptime</h5>
+                            <div class="display-4 mb-2" id="uptime">--</div>
+                            <small id="uptime-since">Since: --</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">System Health</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <span>FreeRADIUS Service:</span>
+                                <span id="radius-status">
+                                    <span class="badge bg-secondary">Checking...</span>
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span>Database:</span>
+                                <span id="database-status">
+                                    <span class="badge bg-secondary">Checking...</span>
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span>Web UI:</span>
+                                <span id="webui-status">
+                                    <span class="badge bg-success">Running</span>
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Last Check:</span>
+                                <span id="last-check">--</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-sm btn-primary" id="refresh-health">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Database Statistics</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <span>Database Size:</span>
+                                <span id="db-size">--</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span>Total Users:</span>
+                                <span id="user-count">--</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span>Users with TOTP:</span>
+                                <span id="totp-count">--</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>RADIUS Clients:</span>
+                                <span id="client-count">--</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-sm btn-success" id="refresh-stats">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Authentication Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3">
+                            <h6>Total Authentications</h6>
+                            <div class="display-4" id="total-auth">--</div>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <h6>Successful</h6>
+                            <div class="display-4 text-success" id="success-auth">--</div>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <h6>Failed</h6>
+                            <div class="display-4 text-danger" id="failed-auth">--</div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h6>Authentication Success Rate (Last 7 Days)</h6>
+                        <canvas id="auth-chart" height="100"></canvas>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-sm btn-warning" id="refresh-auth">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">System Alerts</h5>
+                </div>
+                <div class="card-body">
+                    <div id="alerts-container">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> System monitoring is active. Alerts will appear here.
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-sm btn-danger" id="clear-alerts">
+                        <i class="fas fa-trash"></i> Clear Alerts
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+    // Function to format uptime
+    function formatUptime(seconds) {
+        if (!seconds) return '--';
+        
+        const days = Math.floor(seconds / 86400);
+        const hours = Math.floor((seconds % 86400) / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        
+        if (days > 0) {
+            return `${days}d ${hours}h`;
+        } else if (hours > 0) {
+            return `${hours}h ${minutes}m`;
+        } else {
+            return `${minutes}m`;
+        }
+    }
+    
+    // Function to format bytes
+    function formatBytes(bytes, decimals = 2) {
+        if (!bytes) return '--';
+        
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+    
+    // Function to update system health
+    function updateSystemHealth() {
+        fetch('/api/health')
+            .then(response => response.json())
+            .then(data => {
+                // Update system metrics
+                const cpuUsage = data.system.cpu_usage || 0;
+                const memoryUsage = data.system.memory_usage || 0;
+                const diskUsage = data.system.disk_usage || 0;
+                const uptime = data.system.uptime || 0;
+                
+                document.getElementById('cpu-usage').textContent = cpuUsage + '%';
+                document.getElementById('cpu-progress').style.width = cpuUsage + '%';
+                document.getElementById('cpu-progress').setAttribute('aria-valuenow', cpuUsage);
+                
+                document.getElementById('memory-usage').textContent = memoryUsage + '%';
+                document.getElementById('memory-progress').style.width = memoryUsage + '%';
+                document.getElementById('memory-progress').setAttribute('aria-valuenow', memoryUsage);
+                
+                document.getElementById('disk-usage').textContent = diskUsage + '%';
+                document.getElementById('disk-progress').style.width = diskUsage + '%';
+                document.getElementById('disk-progress').setAttribute('aria-valuenow', diskUsage);
+                
+                document.getElementById('uptime').textContent = formatUptime(uptime);
+                
+                const uptimeSince = new Date(new Date() - (uptime * 1000));
+                document.getElementById('uptime-since').textContent = 'Since: ' + uptimeSince.toLocaleString();
+                
+                // Update component status
+                const radiusStatus = data.components.radius.status;
+                const databaseStatus = data.components.database.status;
+                
+                document.getElementById('radius-status').innerHTML = 
+                    `<span class="badge bg-${radiusStatus === 'healthy' ? 'success' : 'danger'}">${radiusStatus === 'healthy' ? 'Running' : 'Error'}</span>`;
+                
+                document.getElementById('database-status').innerHTML = 
+                    `<span class="badge bg-${databaseStatus === 'healthy' ? 'success' : 'danger'}">${databaseStatus === 'healthy' ? 'Connected' : 'Error'}</span>`;
+                
+                document.getElementById('last-check').textContent = data.timestamp;
+                
+                // Add alerts if components are unhealthy
+                if (radiusStatus !== 'healthy') {
+                    addAlert('danger', 'FreeRADIUS Service Error', data.components.radius.error || 'The FreeRADIUS service is not responding.');
+                }
+                
+                if (databaseStatus !== 'healthy') {
+                    addAlert('danger', 'Database Error', data.components.database.error || 'The database is not accessible.');
+                }
+                
+                // Add alerts for high resource usage
+                if (cpuUsage > 90) {
+                    addAlert('warning', 'High CPU Usage', `CPU usage is at ${cpuUsage}%, which may affect system performance.`);
+                }
+                
+                if (memoryUsage > 90) {
+                    addAlert('warning', 'High Memory Usage', `Memory usage is at ${memoryUsage}%, which may affect system performance.`);
+                }
+                
+                if (diskUsage > 90) {
+                    addAlert('warning', 'High Disk Usage', `Disk usage is at ${diskUsage}%, consider freeing up space.`);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching health data:', error);
+                addAlert('danger', 'Monitoring Error', 'Failed to fetch system health data.');
+            });
+    }
+    
+    // Function to update database statistics
+    function updateDatabaseStats() {
+        fetch('/api/status')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('db-size').textContent = formatBytes(data.database.size_mb * 1024 * 1024);
+                document.getElementById('user-count').textContent = data.users.total;
+                document.getElementById('totp-count').textContent = data.users.with_totp;
+                document.getElementById('client-count').textContent = data.clients.total;
+                
+                document.getElementById('total-auth').textContent = data.authentication.total;
+                document.getElementById('success-auth').textContent = data.authentication.successful;
+                document.getElementById('failed-auth').textContent = data.authentication.failed;
+                
+                // Update chart if it exists
+                if (window.authChart) {
+                    // Assuming the API returns data for the chart
+                    // This would need to be implemented in the API
+                    if (data.auth_history) {
+                        updateAuthChart(data.auth_history);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching status data:', error);
+                addAlert('danger', 'Status Error', 'Failed to fetch database statistics.');
+            });
+    }
+    
+    // Function to add an alert
+    function addAlert(type, title, message) {
+        const alertsContainer = document.getElementById('alerts-container');
+        const alertId = 'alert-' + Date.now();
+        
+        const alertHtml = `
+            <div id="${alertId}" class="alert alert-${type} alert-dismissible fade show" role="alert">
+                <strong>${title}</strong> ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+        
+        alertsContainer.innerHTML = alertHtml + alertsContainer.innerHTML;
+        
+        // Remove info alert if there are other alerts
+        if (type !== 'info') {
+            const infoAlerts = alertsContainer.querySelectorAll('.alert-info');
+            infoAlerts.forEach(alert => alert.remove());
+        }
+    }
+    
+    // Initialize authentication chart
+    function initAuthChart() {
+        const ctx = document.getElementById('auth-chart').getContext('2d');
+        
+        // Sample data - this would be replaced with real data from the API
+        const labels = Array.from({length: 7}, (_, i) => {
+            const date = new Date();
+            date.setDate(date.getDate() - (6 - i));
+            return date.toLocaleDateString();
+        });
+        
+        window.authChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Success Rate (%)',
+                    data: [95, 92, 97, 94, 96, 98, 95],
+                    backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                    borderColor: 'rgba(40, 167, 69, 1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+    
+    // Function to update authentication chart
+    function updateAuthChart(data) {
+        if (!window.authChart) return;
+        
+        window.authChart.data.labels = data.dates;
+        window.authChart.data.datasets[0].data = data.success_rates;
+        window.authChart.update();
+    }
+    
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize chart
+        initAuthChart();
+        
+        // Initial data load
+        updateSystemHealth();
+        updateDatabaseStats();
+        
+        // Set up refresh buttons
+        document.getElementById('refresh-health').addEventListener('click', updateSystemHealth);
+        document.getElementById('refresh-stats').addEventListener('click', updateDatabaseStats);
+        document.getElementById('refresh-auth').addEventListener('click', updateDatabaseStats);
+        
+        // Clear alerts button
+        document.getElementById('clear-alerts').addEventListener('click', function() {
+            document.getElementById('alerts-container').innerHTML = `
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> System monitoring is active. Alerts will appear here.
+                </div>
+            `;
+        });
+        
+        // Set up auto-refresh (every 60 seconds)
+        setInterval(updateSystemHealth, 60000);
+        setInterval(updateDatabaseStats, 60000);
+    });
+</script>
+{% endblock %}

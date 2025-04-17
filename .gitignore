@@ -1,0 +1,196 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+.env/
+.virtualenv/
+virtualenv/
+
+# SQLite Database Files
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+# Keep template/example database files
+!**/templates/**/*.db
+!**/templates/**/*.sqlite
+!**/templates/**/*.sqlite3
+!**/examples/**/*.db
+!**/examples/**/*.sqlite
+!**/examples/**/*.sqlite3
+
+# Log Files
+*.log
+logs/
+log/
+
+# Environment Variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.*
+
+# Docker
+.docker/
+docker-compose.override.yml
+docker-compose.override.yaml
+.dockerignore
+
+# IDE Specific Files
+# VSCode
+.vscode/
+.history/
+*.code-workspace
+# PyCharm/IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+.idea_modules/
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+# Eclipse
+.project
+.classpath
+.settings/
+# Vim
+*.swp
+*.swo
+*~
+# Emacs
+\#*\#
+.\#*
+*~
+
+# TOTP QR Codes and Temporary Files
+qrcodes/
+*.qr
+*.qrcode
+tmp/
+temp/
+
+# SSL Certificates
+# Certificate directories
+certs/
+certificates/
+ssl/
+# Certificate files by extension
+*.pem
+*.key
+*.crt
+*.cer
+*.der
+*.priv
+*.p12
+*.pfx
+*.p7b
+*.p7c
+*.jks
+*.keystore
+*.truststore
+*.csr
+*.srl
+# Specific certificate locations
+freeradius/certs/
+freeradius/config/certs/
+webui/certs/
+webui/app/certs/
+data/certs/
+# Keep example/template certificates
+!certs/example*
+!certs/template*
+!**/examples/**/*.pem
+!**/examples/**/*.key
+!**/examples/**/*.crt
+!**/examples/**/*.cer
+!**/examples/**/*.p12
+!**/examples/**/*.pfx
+!**/examples/**/*.csr
+!**/templates/**/*.pem
+!**/templates/**/*.key
+!**/templates/**/*.crt
+!**/templates/**/*.cer
+!**/templates/**/*.p12
+!**/templates/**/*.pfx
+!**/templates/**/*.csr
+# Keep generate-certs.sh script
+!certs/generate-certs.sh
+
+# FreeRADIUS Specific
+raddb/sites-enabled/
+radacct/
+*.pid
+
+# Flask Web UI
+instance/
+.webassets-cache/
+
+# Backup Files
+*.bak
+*.backup
+*~
+*.old
+*.orig
+
+# OS Specific Files
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+# Linux
+.directory
+.Trash-*
+
+# Generated Documentation
+docs/_build/
+docs/api/
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover

@@ -1,0 +1,612 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1>Performance Dashboard</h1>
+            <p class="lead">Monitor and optimize system performance</p>
+            
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">System Status</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>CPU Usage:</span>
+                                <span id="cpu-usage">Loading...</span>
+                            </div>
+                            <div class="progress mb-3">
+                                <div id="cpu-progress" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Memory Usage:</span>
+                                <span id="memory-usage">Loading...</span>
+                            </div>
+                            <div class="progress mb-3">
+                                <div id="memory-progress" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Disk Usage:</span>
+                                <span id="disk-usage">Loading...</span>
+                            </div>
+                            <div class="progress mb-3">
+                                <div id="disk-progress" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <span>Last Updated:</span>
+                                <span id="last-updated">Never</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button id="refresh-status" class="btn btn-sm btn-primary">Refresh</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Database Stats</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Database Size:</span>
+                                <span id="db-size">Loading...</span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Total Users:</span>
+                                <span id="total-users">Loading...</span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Total Clients:</span>
+                                <span id="total-clients">Loading...</span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Auth Logs:</span>
+                                <span id="total-auth-logs">Loading...</span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Audit Logs:</span>
+                                <span id="total-audit-logs">Loading...</span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <span>Fragmentation:</span>
+                                <span id="db-fragmentation">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button id="optimize-db" class="btn btn-sm btn-success">Optimize Database</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">Performance Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Run performance optimizations and maintenance tasks:</p>
+                            
+                            <div class="d-grid gap-2">
+                                <button id="clear-metrics" class="btn btn-outline-secondary">Clear Performance Metrics</button>
+                                <button id="analyze-queries" class="btn btn-outline-primary">Analyze Slow Queries</button>
+                                <button id="analyze-routes" class="btn btn-outline-info">Analyze Route Performance</button>
+                                <button id="clear-cache" class="btn btn-outline-warning">Clear Application Cache</button>
+                                <button id="run-all-optimizations" class="btn btn-outline-success">Run All Optimizations</button>
+                                <button id="download-report" class="btn btn-outline-dark">Download Performance Report</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <ul class="nav nav-tabs" id="performanceTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="slow-queries-tab" data-bs-toggle="tab" data-bs-target="#slow-queries" type="button" role="tab" aria-controls="slow-queries" aria-selected="true">Slow Queries</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="slow-routes-tab" data-bs-toggle="tab" data-bs-target="#slow-routes" type="button" role="tab" aria-controls="slow-routes" aria-selected="false">Slow Routes</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="frequent-queries-tab" data-bs-toggle="tab" data-bs-target="#frequent-queries" type="button" role="tab" aria-controls="frequent-queries" aria-selected="false">Frequent Queries</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="optimizations-tab" data-bs-toggle="tab" data-bs-target="#optimizations" type="button" role="tab" aria-controls="optimizations" aria-selected="false">Optimizations</button>
+                </li>
+            </ul>
+            
+            <div class="tab-content p-3 border border-top-0 rounded-bottom" id="performanceTabsContent">
+                <div class="tab-pane fade show active" id="slow-queries" role="tabpanel" aria-labelledby="slow-queries-tab">
+                    <h4>Slowest Database Queries</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Query</th>
+                                    <th>Execution Time</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody id="slow-queries-table">
+                                <tr>
+                                    <td colspan="3" class="text-center">Loading data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="tab-pane fade" id="slow-routes" role="tabpanel" aria-labelledby="slow-routes-tab">
+                    <h4>Slowest Routes</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Path</th>
+                                    <th>Method</th>
+                                    <th>Execution Time</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody id="slow-routes-table">
+                                <tr>
+                                    <td colspan="4" class="text-center">Loading data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="tab-pane fade" id="frequent-queries" role="tabpanel" aria-labelledby="frequent-queries-tab">
+                    <h4>Most Frequent Queries</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Query</th>
+                                    <th>Count</th>
+                                    <th>Avg Time</th>
+                                    <th>Total Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="frequent-queries-table">
+                                <tr>
+                                    <td colspan="4" class="text-center">Loading data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="tab-pane fade" id="optimizations" role="tabpanel" aria-labelledby="optimizations-tab">
+                    <h4>Suggested Optimizations</h4>
+                    <div id="optimizations-container">
+                        <p class="text-center">Click "Analyze Slow Queries" or "Run All Optimizations" to see suggestions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Optimization Result Modal -->
+<div class="modal fade" id="optimizationResultModal" tabindex="-1" aria-labelledby="optimizationResultModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="optimizationResultModalLabel">Optimization Results</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <pre id="optimization-result" class="bg-light p-3 rounded"></pre>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Load initial data
+        loadPerformanceData();
+        loadDatabaseStats();
+        loadSystemStatus();
+        
+        // Set up refresh button
+        document.getElementById('refresh-status').addEventListener('click', function() {
+            loadSystemStatus();
+        });
+        
+        // Set up optimize database button
+        document.getElementById('optimize-db').addEventListener('click', function() {
+            fetch('/admin/performance?action=optimize_db')
+                .then(response => response.json())
+                .then(data => {
+                    showOptimizationResult('Database Optimization', data);
+                    loadDatabaseStats();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to optimize database');
+                });
+        });
+        
+        // Set up clear metrics button
+        document.getElementById('clear-metrics').addEventListener('click', function() {
+            fetch('/admin/performance?action=clear')
+                .then(response => response.json())
+                .then(data => {
+                    alert('Performance metrics cleared');
+                    loadPerformanceData();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to clear metrics');
+                });
+        });
+        
+        // Set up analyze queries button
+        document.getElementById('analyze-queries').addEventListener('click', function() {
+            fetch('/api/performance/analyze-queries')
+                .then(response => response.json())
+                .then(data => {
+                    showOptimizations(data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to analyze queries');
+                });
+        });
+        
+        // Set up analyze routes button
+        document.getElementById('analyze-routes').addEventListener('click', function() {
+            fetch('/api/performance/analyze-routes')
+                .then(response => response.json())
+                .then(data => {
+                    showOptimizationResult('Route Analysis', data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to analyze routes');
+                });
+        });
+        
+        // Set up clear cache button
+        document.getElementById('clear-cache').addEventListener('click', function() {
+            fetch('/api/performance/clear-cache', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Cache cleared successfully');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to clear cache');
+                });
+        });
+        
+        // Set up run all optimizations button
+        document.getElementById('run-all-optimizations').addEventListener('click', function() {
+            fetch('/api/performance/optimize-all')
+                .then(response => response.json())
+                .then(data => {
+                    showOptimizationResult('All Optimizations', data);
+                    loadDatabaseStats();
+                    loadSystemStatus();
+                    showOptimizations(data.query_optimizations);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to run optimizations');
+                });
+        });
+        
+        // Set up download report button
+        document.getElementById('download-report').addEventListener('click', function() {
+            fetch('/admin/performance')
+                .then(response => response.json())
+                .then(data => {
+                    // Create a download link for the JSON data
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `performance_report_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to download report');
+                });
+        });
+    });
+    
+    function loadPerformanceData() {
+        fetch('/admin/performance')
+            .then(response => response.json())
+            .then(data => {
+                // Update slow queries table
+                updateSlowQueriesTable(data.slow_queries);
+                
+                // Update slow routes table
+                updateSlowRoutesTable(data.slow_routes);
+                
+                // Update frequent queries table
+                updateFrequentQueriesTable(data.frequent_queries);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+    
+    function loadDatabaseStats() {
+        fetch('/api/status')
+            .then(response => response.json())
+            .then(data => {
+                // Update database stats
+                document.getElementById('db-size').textContent = `${data.database.size_mb} MB`;
+                document.getElementById('total-users').textContent = data.users.total;
+                document.getElementById('total-clients').textContent = data.clients.total;
+                document.getElementById('total-auth-logs').textContent = data.authentication.total;
+                
+                // Get fragmentation info if available
+                fetch('/api/performance/db-stats')
+                    .then(response => response.json())
+                    .then(dbStats => {
+                        if (dbStats.fragmentation_percent) {
+                            document.getElementById('db-fragmentation').textContent = 
+                                `${dbStats.fragmentation_percent.toFixed(2)}%`;
+                        } else {
+                            document.getElementById('db-fragmentation').textContent = 'N/A';
+                        }
+                        
+                        // Update audit logs count if available
+                        if (dbStats.tables && dbStats.tables.audit_logs) {
+                            document.getElementById('total-audit-logs').textContent = dbStats.tables.audit_logs;
+                        } else {
+                            document.getElementById('total-audit-logs').textContent = 'N/A';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        document.getElementById('db-fragmentation').textContent = 'Error';
+                        document.getElementById('total-audit-logs').textContent = 'Error';
+                    });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('db-size').textContent = 'Error';
+                document.getElementById('total-users').textContent = 'Error';
+                document.getElementById('total-clients').textContent = 'Error';
+                document.getElementById('total-auth-logs').textContent = 'Error';
+            });
+    }
+    
+    function loadSystemStatus() {
+        fetch('/api/performance/system-status')
+            .then(response => response.json())
+            .then(data => {
+                // Update CPU usage
+                const cpuPercent = data.cpu_percent;
+                document.getElementById('cpu-usage').textContent = `${cpuPercent}%`;
+                document.getElementById('cpu-progress').style.width = `${cpuPercent}%`;
+                
+                if (cpuPercent < 50) {
+                    document.getElementById('cpu-progress').className = 'progress-bar bg-success';
+                } else if (cpuPercent < 80) {
+                    document.getElementById('cpu-progress').className = 'progress-bar bg-warning';
+                } else {
+                    document.getElementById('cpu-progress').className = 'progress-bar bg-danger';
+                }
+                
+                // Update memory usage
+                const memoryPercent = data.memory_percent;
+                document.getElementById('memory-usage').textContent = `${memoryPercent}%`;
+                document.getElementById('memory-progress').style.width = `${memoryPercent}%`;
+                
+                if (memoryPercent < 50) {
+                    document.getElementById('memory-progress').className = 'progress-bar bg-success';
+                } else if (memoryPercent < 80) {
+                    document.getElementById('memory-progress').className = 'progress-bar bg-warning';
+                } else {
+                    document.getElementById('memory-progress').className = 'progress-bar bg-danger';
+                }
+                
+                // Update disk usage
+                const diskPercent = data.disk_usage_percent;
+                document.getElementById('disk-usage').textContent = `${diskPercent}%`;
+                document.getElementById('disk-progress').style.width = `${diskPercent}%`;
+                
+                if (diskPercent < 50) {
+                    document.getElementById('disk-progress').className = 'progress-bar bg-success';
+                } else if (diskPercent < 80) {
+                    document.getElementById('disk-progress').className = 'progress-bar bg-warning';
+                } else {
+                    document.getElementById('disk-progress').className = 'progress-bar bg-danger';
+                }
+                
+                // Update last updated time
+                document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('cpu-usage').textContent = 'Error';
+                document.getElementById('memory-usage').textContent = 'Error';
+                document.getElementById('disk-usage').textContent = 'Error';
+            });
+    }
+    
+    function updateSlowQueriesTable(queries) {
+        const tableBody = document.getElementById('slow-queries-table');
+        tableBody.innerHTML = '';
+        
+        if (!queries || queries.length === 0) {
+            const row = document.createElement('tr');
+            row.innerHTML = '<td colspan="3" class="text-center">No slow queries recorded</td>';
+            tableBody.appendChild(row);
+            return;
+        }
+        
+        queries.forEach(query => {
+            const row = document.createElement('tr');
+            
+            const queryCell = document.createElement('td');
+            queryCell.textContent = query.query;
+            queryCell.className = 'text-break';
+            
+            const timeCell = document.createElement('td');
+            timeCell.textContent = `${(query.time * 1000).toFixed(2)} ms`;
+            
+            const timestampCell = document.createElement('td');
+            timestampCell.textContent = query.timestamp;
+            
+            row.appendChild(queryCell);
+            row.appendChild(timeCell);
+            row.appendChild(timestampCell);
+            
+            tableBody.appendChild(row);
+        });
+    }
+    
+    function updateSlowRoutesTable(routes) {
+        const tableBody = document.getElementById('slow-routes-table');
+        tableBody.innerHTML = '';
+        
+        if (!routes || routes.length === 0) {
+            const row = document.createElement('tr');
+            row.innerHTML = '<td colspan="4" class="text-center">No slow routes recorded</td>';
+            tableBody.appendChild(row);
+            return;
+        }
+        
+        routes.forEach(route => {
+            const row = document.createElement('tr');
+            
+            const pathCell = document.createElement('td');
+            pathCell.textContent = route.path;
+            
+            const methodCell = document.createElement('td');
+            methodCell.textContent = route.method;
+            
+            const timeCell = document.createElement('td');
+            timeCell.textContent = `${(route.time * 1000).toFixed(2)} ms`;
+            
+            const timestampCell = document.createElement('td');
+            timestampCell.textContent = route.timestamp;
+            
+            row.appendChild(pathCell);
+            row.appendChild(methodCell);
+            row.appendChild(timeCell);
+            row.appendChild(timestampCell);
+            
+            tableBody.appendChild(row);
+        });
+    }
+    
+    function updateFrequentQueriesTable(queries) {
+        const tableBody = document.getElementById('frequent-queries-table');
+        tableBody.innerHTML = '';
+        
+        if (!queries || queries.length === 0) {
+            const row = document.createElement('tr');
+            row.innerHTML = '<td colspan="4" class="text-center">No queries recorded</td>';
+            tableBody.appendChild(row);
+            return;
+        }
+        
+        queries.forEach(query => {
+            const row = document.createElement('tr');
+            
+            const queryCell = document.createElement('td');
+            queryCell.textContent = query.query;
+            queryCell.className = 'text-break';
+            
+            const countCell = document.createElement('td');
+            countCell.textContent = query.count;
+            
+            const avgTimeCell = document.createElement('td');
+            avgTimeCell.textContent = `${(query.avg_time * 1000).toFixed(2)} ms`;
+            
+            const totalTimeCell = document.createElement('td');
+            totalTimeCell.textContent = `${(query.total_time * 1000).toFixed(2)} ms`;
+            
+            row.appendChild(queryCell);
+            row.appendChild(countCell);
+            row.appendChild(avgTimeCell);
+            row.appendChild(totalTimeCell);
+            
+            tableBody.appendChild(row);
+        });
+    }
+    
+    function showOptimizations(optimizations) {
+        const container = document.getElementById('optimizations-container');
+        container.innerHTML = '';
+        
+        if (!optimizations || optimizations.length === 0) {
+            container.innerHTML = '<div class="alert alert-success">No optimizations needed at this time</div>';
+            return;
+        }
+        
+        optimizations.forEach(opt => {
+            const card = document.createElement('div');
+            card.className = 'card mb-3';
+            
+            const cardHeader = document.createElement('div');
+            cardHeader.className = 'card-header bg-warning';
+            cardHeader.textContent = opt.issue;
+            
+            const cardBody = document.createElement('div');
+            cardBody.className = 'card-body';
+            
+            const queryPre = document.createElement('pre');
+            queryPre.className = 'bg-light p-2 mb-3';
+            queryPre.textContent = opt.query;
+            
+            const suggestionHeading = document.createElement('h6');
+            suggestionHeading.textContent = 'Suggestion:';
+            
+            const suggestionPre = document.createElement('pre');
+            suggestionPre.className = 'bg-light p-2';
+            suggestionPre.textContent = opt.suggestion;
+            
+            cardBody.appendChild(queryPre);
+            cardBody.appendChild(suggestionHeading);
+            cardBody.appendChild(suggestionPre);
+            
+            card.appendChild(cardHeader);
+            card.appendChild(cardBody);
+            
+            container.appendChild(card);
+        });
+        
+        // Switch to the optimizations tab
+        document.getElementById('optimizations-tab').click();
+    }
+    
+    function showOptimizationResult(title, data) {
+        const modal = new bootstrap.Modal(document.getElementById('optimizationResultModal'));
+        document.getElementById('optimizationResultModalLabel').textContent = title;
+        document.getElementById('optimization-result').textContent = JSON.stringify(data, null, 2);
+        modal.show();
+    }
+</script>
+{% endblock %}

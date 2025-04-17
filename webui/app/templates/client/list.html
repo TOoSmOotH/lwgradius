@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-12 text-end">
+        <a href="{{ url_for('client.create_client') }}" class="btn btn-primary">
+            <i class="fas fa-plus-circle"></i> Add RADIUS Client
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-network-wired"></i> RADIUS Clients
+        <span class="badge bg-primary">{{ clients|length }}</span>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>IP Address/Hostname</th>
+                        <th>Type</th>
+                        <th>Secret</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for client in clients %}
+                    <tr>
+                        <td>{{ client.shortname }}</td>
+                        <td>{{ client.nasname }}</td>
+                        <td>
+                            <span class="badge bg-info">{{ client.type }}</span>
+                        </td>
+                        <td>
+                            <span class="text-muted">••••••••</span>
+                        </td>
+                        <td>{{ client.description }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('client.edit_client', client_id=client.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="POST" action="{{ url_for('client.rotate_secret', client_id=client.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to rotate the shared secret for this client?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-warning">
+                                        <i class="fas fa-key"></i>
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('client.delete_client', client_id=client.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this client?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center">No RADIUS clients found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <i class="fas fa-info-circle"></i> About RADIUS Clients
+    </div>
+    <div class="card-body">
+        <p>
+            RADIUS clients are network devices (like routers, switches, VPN servers, etc.) that send authentication 
+            requests to the RADIUS server. Each client needs:
+        </p>
+        <ul>
+            <li><strong>IP Address/Hostname:</strong> The network address of the client device</li>
+            <li><strong>Shared Secret:</strong> A password used to secure communication between the client and server</li>
+            <li><strong>Type:</strong> The type of device (helps with specific attribute handling)</li>
+        </ul>
+        <p>
+            <strong>Security Note:</strong> Regularly rotating shared secrets is recommended for security.
+            Use the <i class="fas fa-key"></i> button to generate a new random secret for a client.
+        </p>
+    </div>
+</div>
+{% endblock %}

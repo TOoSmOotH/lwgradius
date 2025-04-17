@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-stats">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="stat-value text-primary">{{ status.users.total }}</div>
+                <div class="stat-label">Total Users</div>
+                <div class="mt-2">
+                    <a href="{{ url_for('user.list_users') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-users"></i> Manage Users
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="stat-value text-success">{{ status.users.with_totp }}</div>
+                <div class="stat-label">TOTP Enabled Users</div>
+                <div class="mt-2">
+                    <a href="{{ url_for('user.list_users') }}" class="btn btn-sm btn-outline-success">
+                        <i class="fas fa-qrcode"></i> TOTP Management
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="stat-value text-info">{{ status.clients.total }}</div>
+                <div class="stat-label">RADIUS Clients</div>
+                <div class="mt-2">
+                    <a href="{{ url_for('client.list_clients') }}" class="btn btn-sm btn-outline-info">
+                        <i class="fas fa-network-wired"></i> Manage Clients
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="stat-value text-warning">{{ status.authentication.total }}</div>
+                <div class="stat-label">Authentication Attempts</div>
+                <div class="mt-2">
+                    <a href="{{ url_for('log.auth_logs') }}" class="btn btn-sm btn-outline-warning">
+                        <i class="fas fa-key"></i> View Auth Logs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-bar"></i> Authentication Statistics
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h5 class="text-success">{{ status.authentication.successful }}</h5>
+                        <p>Successful Authentications</p>
+                    </div>
+                    <div class="col-6">
+                        <h5 class="text-danger">{{ status.authentication.failed }}</h5>
+                        <p>Failed Authentications</p>
+                    </div>
+                </div>
+                <div class="progress mt-3">
+                    {% set success_percent = (status.authentication.successful / status.authentication.total * 100) if status.authentication.total > 0 else 0 %}
+                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ success_percent }}%" 
+                         aria-valuenow="{{ success_percent }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ "%.1f"|format(success_percent) }}%
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-history"></i> Recent Authentication Attempts
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Client</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for auth in status.recent_auth %}
+                            <tr>
+                                <td>{{ auth.username }}</td>
+                                <td>{{ auth.nasipaddress }}</td>
+                                <td>{{ auth.acctstarttime }}</td>
+                                <td>
+                                    {% if auth.acctstoptime %}
+                                    <span class="badge bg-success">Success</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Failed</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-2">
+                    <a href="{{ url_for('log.auth_logs') }}" class="btn btn-sm btn-outline-secondary">
+                        View All Logs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-server"></i> System Information
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Database Size
+                        <span class="badge bg-primary rounded-pill">{{ status.database.size_mb }} MB</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Database Path
+                        <span class="badge bg-secondary rounded-pill">{{ status.database.path }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Last Updated
+                        <span class="badge bg-info rounded-pill">{{ status.timestamp }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-tasks"></i> Quick Actions
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('user.create_user') }}" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Create New User
+                    </a>
+                    <a href="{{ url_for('client.create_client') }}" class="btn btn-info">
+                        <i class="fas fa-plus-circle"></i> Add RADIUS Client
+                    </a>
+                    <a href="{{ url_for('user.import_users') }}" class="btn btn-success">
+                        <i class="fas fa-file-import"></i> Import Users
+                    </a>
+                    <a href="{{ url_for('user.export_users') }}" class="btn btn-secondary">
+                        <i class="fas fa-file-export"></i> Export Users
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+# sql - SQL configuration for FreeRADIUS
+#
+# This file configures the SQL module to use SQLite for user authentication.
+
+sql {
+    driver = "rlm_sql_sqlite"
+    dialect = "sqlite"
+    
+    # Connection info
+    sqlite {
+        filename = "/data/sqlite/radius.db"
+    }
+    
+    # Set to 'yes' to read clients from the database
+    # This is disabled by default for security reasons
+    read_clients = no
+    
+    # Table configuration
+    user_table = "radcheck"
+    group_table = "radusergroup"
+    read_groups = yes
+    logfile = ${logdir}/sqltrace.sql
+    
+    # Remove stale session if a new one comes in
+    delete_stale_sessions = yes
+    
+    # Connection pool
+    pool {
+        start = 5
+        min = 4
+        max = 10
+        spare = 3
+        uses = 0
+        lifetime = 0
+        idle_timeout = 60
+    }
+    
+    # Query configuration
+    authorize_check_query = "SELECT id, username, attribute, value, op FROM radcheck WHERE username = '%{SQL-User-Name}' ORDER BY id"
+    authorize_reply_query = "SELECT id, username, attribute, value, op FROM radreply WHERE username = '%{SQL-User-Name}' ORDER BY id"
+    
+    group_membership_query = "SELECT groupname FROM radusergroup WHERE username = '%{SQL-User-Name}' ORDER BY priority"
+    
+    accounting_update_query = "UPDATE radacct SET acctupdatetime = datetime('now'), acctinterval = '%{acct-interval}', acctinputoctets = '%{%{Acct-Input-Gigawords}:-0}' * 4294967296 + '%{%{Acct-Input-Octets}:-0}', acctoutputoctets = '%{%{Acct-Output-Gigawords}:-0}' * 4294967296 + '%{%{Acct-Output-Octets}:-0}' WHERE acctsessionid = '%{Acct-Session-Id}' AND username = '%{SQL-User-Name}' AND nasipaddress = '%{NAS-IP-Address}'"
+    
+    accounting_start_query = "INSERT INTO radacct (acctsessionid, acctuniqueid, username, realm, nasipaddress, nasportid, nasporttype, acctstarttime, acctupdatetime, acctstoptime, acctinterval, acctsessiontime, acctauthentic, connectinfo_start, connectinfo_stop, acctinputoctets, acctoutputoctets, calledstationid, callingstationid, acctterminatecause, servicetype, framedprotocol, framedipaddress) VALUES ('%{Acct-Session-Id}', '%{Acct-Unique-Session-Id}', '%{SQL-User-Name}', '%{Realm}', '%{NAS-IP-Address}', '%{NAS-Port}', '%{NAS-Port-Type}', datetime('now'), datetime('now'), NULL, '0', '0', '%{Acct-Authentic}', '%{Connect-Info}', '', '0', '0', '%{Called-Station-Id}', '%{Calling-Station-Id}', '', '%{Service-Type}', '%{Framed-Protocol}', '%{Framed-IP-Address}')"
+    
+    accounting_stop_query = "UPDATE radacct SET acctstoptime = datetime('now'), acctsessiontime = '%{Acct-Session-Time}', acctterminatecause = '%{Acct-Terminate-Cause}', acctinputoctets = '%{%{Acct-Input-Gigawords}:-0}' * 4294967296 + '%{%{Acct-Input-Octets}:-0}', acctoutputoctets = '%{%{Acct-Output-Gigawords}:-0}' * 4294967296 + '%{%{Acct-Output-Octets}:-0}', connectinfo_stop = '%{Connect-Info}' WHERE acctsessionid = '%{Acct-Session-Id}' AND username = '%{SQL-User-Name}' AND nasipaddress = '%{NAS-IP-Address}'"
+}
